@@ -1,0 +1,17 @@
+---
+- name: Test roles from collection
+  hosts: localhost
+  collections:
+    - name_of_namespace.name_of_collection
+  tasks:
+    - name: Run ansible-roles
+      import_role:
+        name: ansible-roles
+
+    - name: Run secrets-manager-role
+      import_role:
+        name: secrets-manager-role
+
+    - name: Run workshop-role
+      import_role:
+        name: workshop-role
