@@ -1,0 +1,10 @@
+stages:
+  - sync
+
+sync_from_github:
+  stage: sync
+  script:
+    - git remote add github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git
+    - git fetch github
+    - git merge github/main --allow-unrelated-histories
+    - git push origin main
