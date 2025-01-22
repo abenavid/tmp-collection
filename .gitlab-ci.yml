@@ -8,3 +8,6 @@ sync_from_github:
     - git fetch github
     - git merge github/main --allow-unrelated-histories
     - git push origin main
+  tags:
+    - internal
+    - pah
