@@ -7,8 +7,10 @@ sync_from_github:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
-    - git remote | grep github && git remote set-url github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git
+    # Check if the 'github' remote exists, add or update it
+    - git remote | grep github && git remote set-url github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git || git remote add github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git
     - git fetch github
+    - git checkout -B main github/main  # Ensure the local 'main' branch exists and tracks 'github/main'
     - git merge github/main --allow-unrelated-histories
     - git push origin main
   tags:
