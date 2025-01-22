@@ -8,7 +8,7 @@ sync_from_github:
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
     - git remote add github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git || git remote set-url github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git
-    - git remote add gitlab https://username:glpat-CVwruLjsUxyksaQggeMF@gitlab.consulting.redhat.com/internal-ansible-library/test.git || git remote set-url gitlab https://username:glpat-CVwruLjsUxyksaQggeMF@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    - git remote add gitlab https://username:glpat-sWCfB7RSxtmTgixg5nAz@gitlab.consulting.redhat.com/internal-ansible-library/test.git || git remote set-url gitlab https://username:glpat-sWCfB7RSxtmTgixg5nAz@gitlab.consulting.redhat.com/internal-ansible-library/test.git
     - git fetch github
     - git checkout -B main github/main
     - git fetch gitlab
