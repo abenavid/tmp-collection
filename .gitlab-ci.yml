@@ -9,5 +9,4 @@ sync_from_github:
     - git merge github/main --allow-unrelated-histories
     - git push origin main
   tags:
-    - internal
-    - pah
+    - default
