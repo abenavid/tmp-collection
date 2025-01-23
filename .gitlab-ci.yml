@@ -32,15 +32,16 @@ build_collections:
     - mkdir -p output
     - echo "Starting collection build process..."
     - |
-      for collection in mock_collection mock_collection_2 mock_collection_3; do
-        echo "Building collection: $collection";
-        if [ -d "$collection" ]; then
-          cd "$collection" || exit 1;
-          ansible-galaxy collection build --output-path=../output --force || echo "Collection build failed for $collection!";
-          cd - || exit 1;
+      for namespace in mock_namespace mock_namespace_2 mock_namespace_3; do
+        collection_name=$(basename "$namespace") # Extract namespace name
+        echo "Building collection in namespace: $namespace"
+        if [ -d "$namespace/$collection_name" ]; then
+            cd "$namespace/$collection_name" || exit 1
+            ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for $namespace!"
+            cd - || exit 1
         else
-          echo "Directory $collection does not exist! Skipping...";
-        fi;
+            echo "Directory $namespace/$collection_name does not exist! Skipping..."
+        fi
       done
     - echo "Build complete. Output contents:"
     - ls -al output
