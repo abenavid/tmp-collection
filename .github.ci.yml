@@ -4,12 +4,17 @@ stages:
 
 sync_from_github:
   stage: sync
+  image: ubuntu:20.04
   script:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
-    - git remote add github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git || git remote set-url github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git
-    - git remote add gitlab https://username:$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || git remote set-url gitlab https://username:$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    - |
+      git remote add github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git || \
+      git remote set-url github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git
+    - |
+      git remote add gitlab https://username:$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
+      git remote set-url gitlab https://username:$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
     - git fetch github
     - git checkout -B main github/main
     - git fetch gitlab
@@ -21,24 +26,25 @@ sync_from_github:
 
 build_collections:
   stage: build
+  image: ubuntu:20.04
   script:
+    # Step 1: Install dependencies
     - apt-get update && apt-get install -y python3 python3-pip
     - pip3 install ansible-core
-    - mkdir -p output  # Ensure the output directory exists
-    - echo "Current directory: $(pwd)"
-    - echo "Listing all files in the repository:"
-    - ls -R
-    - |
-      # Find all collections dynamically and build them
-      for collection_dir in $(find . -type f -name "galaxy.yml" -exec dirname {} \;); do
-        echo "Found collection directory: $collection_dir"
-        cd "$collection_dir"
-        ansible-galaxy collection build || { echo "Failed to build collection in $collection_dir"; exit 1; }
-        mv *.tar.gz /builds/internal-ansible-library/test/output/ || { echo "Failed to move tar.gz for $collection_dir"; exit 1; }
-        cd -  # Return to the previous directory
-      done
-    - echo "Listing contents of output directory:"
-    - ls -l /builds/internal-ansible-library/test/output/
+
+    # Step 2: Debugging directory structure
+    - echo "Checking current directory contents:"
+    - ls -al
+    - echo "Creating and verifying the output directory..."
+    - mkdir -p output
+    - ls -al output || echo "output directory does not exist!"
+
+    # Step 3: Build collections (replace this with your actual build command)
+    - echo "Building Ansible collection..."
+    - ansible-galaxy collection build --output-path=output || echo "Collection build failed!"
+    - echo "Build complete. Checking contents of output directory:"
+    - ls -al output
+
   artifacts:
     paths:
       - output/*.tar.gz
