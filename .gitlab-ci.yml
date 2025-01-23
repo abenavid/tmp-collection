@@ -24,35 +24,23 @@ sync_from_github:
     - internal
     - pah
 
-build_collections:
+build_mock_collection_2:
   stage: build
   script:
     - apt-get update && apt-get install -y python3 python3-pip
     - pip3 install ansible-core
-    - ls
-    - cd ..
-    - ls
     - mkdir -p output
-    - echo "Starting collection build process..."
-    - |
-      for namespace in mock_namespace mock_namespace_2 mock_namespace_3; do
-        collection_name=$(basename "$namespace") # Extract namespace name
-        echo "Building collection in namespace: $namespace"
-        if [ -d "$namespace/$collection_name" ]; then
-            cd "$namespace/$collection_name" || exit 1
-            ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for $namespace!"
-            cd - || exit 1
-        else
-            echo "Directory $namespace/$collection_name does not exist! Skipping..."
-        fi
-      done
+    - echo "Building collection for mock_namespace_2/mock_collection_2..."
+    - if [ -d "mock_namespace_2/mock_collection_2" ]; then
+        cd mock_namespace_2/mock_collection_2 || exit 1;
+        ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for mock_namespace_2/mock_collection_2!";
+        cd - || exit 1;
+      else
+        echo "Directory mock_namespace_2/mock_collection_2 does not exist!";
+        exit 1;
+      fi
     - echo "Build complete. Output contents:"
     - ls -al output
-    - if ls output/*.tar.gz 1> /dev/null 2>&1; then
-        echo "Uploading artifacts...";
-      else
-        echo "No artifacts to upload.";
-      fi
   artifacts:
     paths:
       - output/*.tar.gz
