@@ -1,5 +1,6 @@
 stages:
   - sync
+  - build
 
 sync_from_github:
   stage: sync
@@ -14,6 +15,31 @@ sync_from_github:
     - git fetch gitlab
     - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected."
     - git push gitlab main
+  tags:
+    - internal
+    - pah
+
+build_collections:
+  stage: build
+  script:
+    - apt-get update && apt-get install -y python3 python3-pip
+    - pip3 install ansible-core
+    - |
+      # Find all namespaces and collections dynamically
+      for namespace_dir in $(find . -type d -name "ansible_collections"); do
+        cd $namespace_dir
+        for collection_dir in $(find . -mindepth 1 -maxdepth 1 -type d); do
+          echo "Building collection: $collection_dir"
+          cd $collection_dir
+          ansible-galaxy collection build
+          mv *.tar.gz /builds/output/  # Move built files to a central output directory
+          cd ..
+        done
+        cd ../../..
+      done
+  artifacts:
+    paths:
+      - output/*.tar.gz
   tags:
     - internal
     - pah
