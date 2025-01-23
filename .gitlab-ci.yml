@@ -36,7 +36,7 @@ build_collections:
         echo "Building collection in namespace: $namespace";
         if [ -d "$namespace/mock_collection" ]; then
           cd $namespace/mock_collection || exit 1;
-          ansible-galaxy collection build --output-path=../../../output || echo "Collection build failed for $namespace!";
+          ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for $namespace!";
           cd - || exit 1;
         else
           echo "Directory $namespace/mock_collection does not exist! Skipping...";
@@ -44,6 +44,11 @@ build_collections:
       done
     - echo "Build complete. Output contents:"
     - ls -al output
+    - if ls output/*.tar.gz 1> /dev/null 2>&1; then
+        echo "Uploading artifacts...";
+      else
+        echo "No artifacts to upload.";
+      fi
   artifacts:
     paths:
       - output/*.tar.gz
