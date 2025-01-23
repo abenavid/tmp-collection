@@ -1,0 +1,19 @@
+stages:
+  - sync
+
+sync_from_github:
+  stage: sync
+  script:
+    - apt-get update && apt-get install -y git
+    - git config --global user.email "abenavid@redhat.com"
+    - git config --global user.name "Alex Benavides"
+    - git remote add github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git || git remote set-url github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git
+    - git remote add gitlab https://username:$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || git remote set-url gitlab https://username:$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    - git fetch github
+    - git checkout -B main github/main
+    - git fetch gitlab
+    - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected. "
+    - git push gitlab main
+  tags:
+    - internal
+    - pah

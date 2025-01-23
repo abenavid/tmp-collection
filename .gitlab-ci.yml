@@ -13,7 +13,7 @@ sync_from_github:
     - git fetch github
     - git checkout -B main github/main
     - git fetch gitlab
-    - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected."
+    - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected. "
     - git push gitlab main
   tags:
     - internal
