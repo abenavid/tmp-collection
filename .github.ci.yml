@@ -4,7 +4,6 @@ stages:
 
 sync_from_github:
   stage: sync
-  image: ubuntu:20.04
   script:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
@@ -26,7 +25,6 @@ sync_from_github:
 
 build_collections:
   stage: build
-  image: ubuntu:20.04
   script:
     # Step 1: Install dependencies
     - apt-get update && apt-get install -y python3 python3-pip
