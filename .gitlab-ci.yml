@@ -32,14 +32,14 @@ build_collections:
     - mkdir -p output
     - echo "Starting collection build process..."
     - |
-      for namespace in mock_namespace mock_namespace_2 mock_namespace_3; do
-        echo "Building collection in namespace: $namespace";
-        if [ -d "$namespace/mock_collection" ]; then
-          cd $namespace/mock_collection || exit 1;
-          ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for $namespace!";
+      for collection in mock_collection mock_collection_2 mock_collection_3; do
+        echo "Building collection: $collection";
+        if [ -d "$collection" ]; then
+          cd "$collection" || exit 1;
+          ansible-galaxy collection build --output-path=../output --force || echo "Collection build failed for $collection!";
           cd - || exit 1;
         else
-          echo "Directory $namespace/mock_collection does not exist! Skipping...";
+          echo "Directory $collection does not exist! Skipping...";
         fi;
       done
     - echo "Build complete. Output contents:"
