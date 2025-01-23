@@ -29,21 +29,21 @@ build_collections:
   script:
     - apt-get update && apt-get install -y python3 python3-pip
     - pip3 install ansible-core
-    - mkdir -p output  # Create the output directory
-
-    # Loop through all namespaces and build collections
+    - mkdir -p output
+    - echo "Starting collection build process..."
     - |
       for namespace in mock_namespace mock_namespace_2 mock_namespace_3; do
-        echo "Building collection in namespace: $namespace"
-        cd $namespace/mock_collection || exit 1  # Navigate to the collection directory
-        ansible-galaxy collection build --output-path=../../../output || echo "Collection build failed for $namespace!"
-        cd - || exit 1  # Return to the root directory
+        echo "Building collection in namespace: $namespace";
+        if [ -d "$namespace/mock_collection" ]; then
+          cd $namespace/mock_collection || exit 1;
+          ansible-galaxy collection build --output-path=../../../output || echo "Collection build failed for $namespace!";
+          cd - || exit 1;
+        else
+          echo "Directory $namespace/mock_collection does not exist! Skipping...";
+        fi;
       done
-
-    # Verify the output directory
-    - echo "Build complete. Contents of output directory:"
+    - echo "Build complete. Output contents:"
     - ls -al output
-
   artifacts:
     paths:
       - output/*.tar.gz
