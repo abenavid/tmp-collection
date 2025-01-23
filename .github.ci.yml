@@ -24,16 +24,21 @@ build_collections:
   script:
     - apt-get update && apt-get install -y python3 python3-pip
     - pip3 install ansible-core
-    - mkdir -p output  # Create an output directory for the tar.gz files
+    - mkdir -p output  # Ensure the output directory exists
+    - echo "Current directory: $(pwd)"
+    - echo "Listing all files in the repository:"
+    - ls -R
     - |
       # Find all collections dynamically and build them
       for collection_dir in $(find . -type f -name "galaxy.yml" -exec dirname {} \;); do
-        echo "Building collection in $collection_dir"
+        echo "Found collection directory: $collection_dir"
         cd "$collection_dir"
         ansible-galaxy collection build || { echo "Failed to build collection in $collection_dir"; exit 1; }
-        mv *.tar.gz /builds/output/ || { echo "Failed to move tar.gz for $collection_dir"; exit 1; }
+        mv *.tar.gz /builds/internal-ansible-library/test/output/ || { echo "Failed to move tar.gz for $collection_dir"; exit 1; }
         cd -  # Return to the previous directory
       done
+    - echo "Listing contents of output directory:"
+    - ls -l /builds/internal-ansible-library/test/output/
   artifacts:
     paths:
       - output/*.tar.gz
