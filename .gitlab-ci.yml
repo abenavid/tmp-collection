@@ -29,6 +29,9 @@ build_collections:
   script:
     - apt-get update && apt-get install -y python3 python3-pip
     - pip3 install ansible-core
+    - ls
+    - cd ..
+    - ls
     - mkdir -p output
     - echo "Starting collection build process..."
     - |
