@@ -43,7 +43,7 @@ build_mock_collection_2:
     - ls -al output
   artifacts:
     paths:
-      - output/*.tar.gz
+      - ../output/*.tar.gz
     expire_in: 1 week
   tags:
     - internal
