@@ -33,7 +33,7 @@ build_mock_collection_2:
     - echo "Building collection for mock_namespace_2/mock_collection_2..."
     - if [ -d "mock_namespace_2/mock_collection_2" ]; then
         cd mock_namespace_2/mock_collection_2 || exit 1;
-        ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for mock_namespace_2/mock_collection_2!";
+        ansible-galaxy collection build --output-path=./output/ --force || echo "Collection build failed for mock_namespace_2/mock_collection_2!";
         cd - || exit 1;
       else
         echo "Directory mock_namespace_2/mock_collection_2 does not exist!";
@@ -43,7 +43,7 @@ build_mock_collection_2:
     - ls -al output
   artifacts:
     paths:
-      - ../output/*.tar.gz
+      - output/*.tar.gz
     expire_in: 1 week
   tags:
     - internal
