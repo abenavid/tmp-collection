@@ -40,10 +40,10 @@ build_mock_collection_2:
         exit 1;
       fi
     - echo "Build complete. Output contents:"
-    - ls -al output
+    - ls -al mock_namespace_2/mock_collection_2/output
   artifacts:
     paths:
-      - output/*.tar.gz
+      - mock_namespace_2/mock_collection_2/output/*.tar.gz
     expire_in: 1 week
   tags:
     - internal
