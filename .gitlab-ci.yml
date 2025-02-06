@@ -35,13 +35,12 @@ sync_to_github:
     - rm -rf tmp_repo
     - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
     - cd tmp_repo
-    - git remote add origin https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    - git remote add gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
     - git fetch --all
     - git remote -v
 
     - git checkout master || git checkout -B master origin/master
     - git fetch gitlab main || echo "gitlab main branch not found."
-    - git fetch origin main || echo "origin main branch not found."
     - git branch -r | grep "gitlab/main" && git merge --allow-unrelated-histories gitlab/main || echo "GitLab main branch does not exist, skipping merge."
 #    - git merge --allow-unrelated-histories github/master || echo "No conflicts detected."
 
