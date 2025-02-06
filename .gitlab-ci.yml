@@ -8,6 +8,7 @@ sync_from_github:
     # # Install Git
     - apt-get update && apt-get install -y git
     - git remote -v
+    - git fetch --all
 
 
     # # Configure Git
