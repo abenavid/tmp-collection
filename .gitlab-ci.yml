@@ -42,6 +42,9 @@ sync_to_github:
     - git checkout master || git checkout -B master origin/master
     - git fetch gitlab main || echo "gitlab main branch not found."
     - git branch -r | grep "gitlab/main" && git merge --allow-unrelated-histories gitlab/main || echo "GitLab main branch does not exist, skipping merge."
+    - git gc --prune=now
+    - git repack -a -d --depth=250 --window=250
+    - git push --force --thin github master
 #    - git merge --allow-unrelated-histories github/master || echo "No conflicts detected."
 
     # - git gc --prune=now
