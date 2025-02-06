@@ -45,7 +45,7 @@ sync_to_github:
     - git gc --prune=now
     - git repack -a -d --depth=250 --window=250
 
-    - git push --force --thin origin master 
+    - git push --force --thin github master 
 
 
     # # Configure Git
