@@ -1,0 +1,68 @@
+stages:
+  - sync
+
+sync_from_github:
+  stage: sync
+  script:
+    - apt-get update && apt-get install -y git
+    - git config --global user.email "abenavid@redhat.com"
+    - git config --global user.name "Alex Benavides"
+    - git remote -v
+    - git fetch --all
+    - git checkout -B main github/master
+    - git merge --allow-unrelated-histories origin/main || echo "No conflicts detected."
+    - echo "Pushing GitHub repository into GitLab..."
+    - git push --force gitlab main
+    - git remote -v
+  tags:
+    - internal
+    - pah
+
+sync_to_github:
+  stage: sync
+  script:
+    - apt-get update && apt-get install -y git
+    - git config --global user.email "abenavid@redhat.com"
+    - git config --global user.name "Alex Benavides"
+    - rm -rf tmp_repo
+    - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
+    - cd tmp_repo
+    - git remote add gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    - git fetch --all
+    - git remote -v
+    - git checkout master || git checkout -B master origin/master
+    - git fetch gitlab main || echo "gitlab main branch not found."
+    - git branch -r | grep "gitlab/main" && git merge --allow-unrelated-histories gitlab/main || echo "GitLab main branch does not exist, skipping merge."
+    - git gc --prune=now
+    - git repack -a -d --depth=250 --window=250
+    - git push --force --thin origin master
+  tags:
+    - internal
+    - pah
+
+
+# build_mock_collection_2:
+#   stage: build
+#   script:
+#     - apt-get update && apt-get install -y python3 python3-pip
+#     - pip3 install ansible-core
+#     - mkdir -p output
+#     - echo "Building collection for mock_namespace_2/mock_collection_2..."
+#     - if [ -d "mock_namespace_2/mock_collection_2" ]; then
+#         cd mock_namespace_2/mock_collection_2 || exit 1;
+#         ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for mock_namespace_2/mock_collection_2!";
+#         cd - || exit 1;
+#       else
+#         echo "Directory mock_namespace_2/mock_collection_2 does not exist!";
+#         exit 1;
+#       fi
+#     - echo "Build complete. Output contents:"
+#     - ls -al output
+#   artifacts:
+#     paths:
+#       - output/*.tar.gz
+#     expire_in: 1 week
+#   tags:
+#     - internal
+#     - pah
+
