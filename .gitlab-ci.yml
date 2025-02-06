@@ -8,13 +8,21 @@ sync_to_github:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
-    - |
-      git remote add github https://$TMP_GITHUB_PAT@github.com/abenavid/mock-collection.git || \
+
+    - git remote add github https://$TMP_GITHUB_PAT@github.com/abenavid/mock-collection.git || \
       git remote set-url github https://$TMP_GITHUB_PAT@github.com/abenavid/mock-collection.git
+
     - git fetch --all
     - git checkout -B main origin/main
-    - git reset --hard origin/main
-    - git push --force github main
+
+    - git fsck --full || echo "No issues detected."
+    - git gc --prune=now
+    - git repack -A -d --depth=250 --window=250
+
+    - echo "Attempting to push to GitHub..."
+    - git push --force --thin github main || \
+      (echo "Push failed, retrying with repack..." && git gc --prune=now && git repack -A -d --depth=250 --window=250 && git push --force github main)
+
   tags:
     - internal
     - pah
