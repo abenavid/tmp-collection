@@ -33,8 +33,11 @@ sync_to_github:
     - git fetch --all
     - git remote -v
 
+
     - rm -rf tmp_repo
     - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
+    - git branch -r  
+    - git ls-remote --heads gitlab
     - cd tmp_repo
     - git checkout -B master gitlab/main
     - git merge gitlab/main 
