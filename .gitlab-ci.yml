@@ -12,18 +12,24 @@ sync_to_github:
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
 
-    # Fetch latest changes from GitLab and GitHub
+    # Fetch latest changes
     - git fetch --all
 
     # Checkout main branch from GitLab
     - git checkout -B main origin/main
 
-    # Merge latest GitHub changes into GitLab's main branch (if any)
+    # Merge latest GitHub changes
     - git merge --allow-unrelated-histories github/main || echo "No conflicts, merge complete."
 
-    # Push the updated branch to GitHub
+    # Run Git maintenance commands to prevent push errors
+    - git fsck --full || echo "No integrity issues found."
+    - git gc --prune=now
+    - git repack -A -d --depth=250 --window=250
+
+    # Attempt to push to GitHub
     - echo "Pushing to GitHub..."
-    - git push --force github main || echo "Push to GitHub failed!"
+    - git push --force github main || \
+      (echo "Push failed, retrying with repack..." && git gc --prune=now && git repack -A -d --depth=250 --window=250 && git push --force github main)
 
   tags:
     - internal
