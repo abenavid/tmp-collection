@@ -20,15 +20,18 @@ sync_from_github:
 
     # Add GitLab as a remote
     #- git remote add gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
-    - git remote set-url origin https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    - git remote set-url gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
 
+    - git fetch gitlab
     # Fetch latest changes from both repositories
-    - git fetch --all
+    - git checkout -B main origin/main
 
     # Force push GitHub repository contents into GitLab
+    - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected."
+
+    # Push the merged version to GitLab
     - echo "Pushing GitHub repository into GitLab..."
     - git push --force gitlab main
-
   tags:
     - internal
     - pah
