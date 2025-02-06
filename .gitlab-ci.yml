@@ -9,6 +9,9 @@ sync_from_github:
     - apt-get update && apt-get install -y git
     - git remote -v
     - git fetch --all
+    - git checkout -B main github/main
+    - git merge --allow-unrelated-histories origin/main || echo "No conflicts detected."
+
 
 
     # # Configure Git
