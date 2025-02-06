@@ -17,6 +17,7 @@ sync_from_github:
     - git merge --allow-unrelated-histories origin/main || echo "No conflicts detected."
     
     # Push merged updates to GitLab
+    - echo "Pushing GitHub repository into GitLab..."
     - git push --force gitlab main
     - git remote -v
 
@@ -34,9 +35,11 @@ sync_to_github:
     # Fetch latest from GitLab
     - git fetch gitlab
     - git checkout main
+    
     - git merge gitlab/main || echo "No conflicts detected."
 
     # Push updated code back to GitHub
+    - echo "Pushing GitLab repository into GitHub..."
     - git push --force github master
 
 
