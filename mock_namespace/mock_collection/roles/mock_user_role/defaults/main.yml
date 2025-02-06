@@ -1,5 +1,0 @@
----
-# defaults file for mock_user_role
-
-customer_id: 'customer_001'
-customer_email: 'customer@example.com'

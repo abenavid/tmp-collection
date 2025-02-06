@@ -1,7 +1,0 @@
----
-# vars file for mock_osi_role
-
-osi_app_name: "osi-app-customer-X"
-osi_app_version: "1.0.0"
-osi_app_port: 8080
-osi_app_env: "production"

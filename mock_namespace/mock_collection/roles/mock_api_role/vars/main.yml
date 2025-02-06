@@ -1,5 +1,0 @@
----
-# vars file for mock_api_role
-
-customer_user: 'jon_doe_123'
-customer_password: 'myPassword'

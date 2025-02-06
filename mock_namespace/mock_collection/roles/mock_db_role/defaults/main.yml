@@ -1,5 +1,0 @@
----
-# defaults file for mock_db_role
-
-dbadmin_pass: "testpassword1"
-dbuser_pass: "testpassword2"
