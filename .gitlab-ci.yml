@@ -2,42 +2,32 @@ stages:
   - sync
   - build
 
-sync_to_github:
+sync_from_github:
   stage: sync
   script:
     # Install Git
     - apt-get update && apt-get install -y git
 
-    # Configure Git user
+    # Configure Git
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
 
-    # Add GitHub as remote (force update in case it already exists)
-    - git remote remove github || true
-    - git remote add github https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git
+    # Clone the GitHub repository into the GitLab pipeline
+    - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git github_repo
 
-    # Fetch latest changes
+    # Change into the cloned GitHub directory
+    - cd github_repo
+
+    # Add GitLab as a remote
+    - git remote add gitlab https://$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
+      git remote set-url gitlab https://$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+
+    # Fetch latest changes from both repositories
     - git fetch --all
 
-    # Checkout main branch from GitLab
-    - git checkout -B main origin/main
-
-    # Merge latest GitHub changes
-    - git merge --allow-unrelated-histories github/main || echo "No conflicts, merge complete."
-
-    # Run Git maintenance commands to prevent push errors
-    - git fsck --full || echo "No integrity issues found."
-    - git gc --prune=now
-    - git repack -A -d --depth=250 --window=250
-
-    # Push to GitHub with a retry mechanism
-    - echo "Pushing to GitHub..."
-    - git push --force github main || (
-        echo "Push failed, retrying cleanup..."
-        git gc --prune=now
-        git repack -A -d --depth=250 --window=250
-        git push --force github main
-      )
+    # Force push GitHub repository contents into GitLab
+    - echo "Pushing GitHub repository into GitLab..."
+    - git push --force gitlab main
 
   tags:
     - internal
