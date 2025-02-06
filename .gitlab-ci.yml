@@ -1,44 +1,37 @@
 stages:
   - sync
-  - build
 
 sync_to_github:
-  stage: sync
-  before_script:
-    - apt-get update && apt-get install -y git openssh-client
-    - git --version
-
-    - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - eval $(ssh-agent -s)
-    - ssh-add ~/.ssh/id_rsa
-    - ssh-keyscan github.com >> ~/.ssh/known_hosts
-
+  image: ubuntu:20.04
   script:
+    # Install Git
+    - apt-get update && apt-get install -y git
+
+    # Configure Git user
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
 
-    - if git remote | grep -q "github"; then
-        git remote set-url github git@github.com:abenavid/tmp-collection.git;
-      else
-        git remote add github git@github.com:abenavid/tmp-collection.git;
-      fi
+    # Make sure GitHub remote exists
+    - git remote add github https://$GITHUB_PAT@github.com/abenavid/tmp-collection.git || \
+      git remote set-url github https://$GITHUB_PAT@github.com/abenavid/tmp-collection.git
 
+    # Fetch latest changes from GitLab and GitHub
     - git fetch --all
+
+    # Checkout main branch from GitLab
     - git checkout -B main origin/main
 
-    - git fsck --full || echo "No issues detected."
-    - git gc --prune=now
-    - git repack -A -d --depth=250 --window=250
+    # Merge latest GitHub changes into GitLab's main branch (if any)
+    - git merge --allow-unrelated-histories github/main || echo "No conflicts, merge complete."
 
-    - echo "Attempting to push to GitHub..."
-    - git push --force github main || \
-      (echo "Push failed, retrying with repack..." && git gc --prune=now && git repack -A -d --depth=250 --window=250 && git push --force github main)
+    # Push the updated branch to GitHub
+    - echo "Pushing to GitHub..."
+    - git push --force github main || echo "Push to GitHub failed!"
 
   tags:
     - internal
     - pah
+
 
 # build_mock_collection_2:
 #   stage: build
