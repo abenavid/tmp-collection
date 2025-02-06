@@ -12,6 +12,10 @@ sync_to_github:
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
 
+    # Add GitHub as remote (force update in case it already exists)
+    - git remote remove github || true
+    - git remote add github https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git
+
     # Fetch latest changes
     - git fetch --all
 
