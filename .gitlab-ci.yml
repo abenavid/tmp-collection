@@ -20,6 +20,9 @@ sync_from_github:
     - echo "Pushing GitHub repository into GitLab..."
     - git push --force gitlab main
     - git remote -v
+  tags:
+    - internal
+    - pah
 
 sync_to_github:
   stage: sync
