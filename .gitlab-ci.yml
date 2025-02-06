@@ -27,24 +27,44 @@ sync_from_github:
 sync_to_github:
   stage: sync
   script:
-    - apt-get update && apt-get install -y git
-    - git config --global user.email "abenavid@redhat.com"
-    - git config --global user.name "Alex Benavides"
+    # - apt-get update && apt-get install -y git
+    # - git config --global user.email "abenavid@redhat.com"
+    # - git config --global user.name "Alex Benavides"
+
+      # Navigate to your local repo
+      - cd /path/to/tmp_repo
+
+# Remove the sensitive line(s) from .gitlab-ci.yml
+      - nano .gitlab-ci.yml  # (or use vi, code, etc.)
+
+# If needed, manually remove any hardcoded secrets.
+
+      # Rewrite history to remove the secret
+      - git filter-branch --force --index-filter \
+        "git rm --cached --ignore-unmatch .gitlab-ci.yml" \
+        --prune-empty --tag-name-filter cat -- --all
+
+      # Re-add the cleaned-up .gitlab-ci.yml without secrets
+      - git add .gitlab-ci.yml
+      - git commit -m "Remove GitLab Access Token from .gitlab-ci.yml"
+
+      # Push the rewritten history (forced update to clean repository)
+      - git push --force github master
 
 
-    - rm -rf tmp_repo
-    - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
-    - cd tmp_repo
-    - git remote add gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
-    - git fetch --all
-    - git remote -v
+    # - rm -rf tmp_repo
+    # - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
+    # - cd tmp_repo
+    # - git remote add gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    # - git fetch --all
+    # - git remote -v
 
-    - git checkout master || git checkout -B master origin/master
-    - git fetch gitlab main || echo "gitlab main branch not found."
-    - git branch -r | grep "gitlab/main" && git merge --allow-unrelated-histories gitlab/main || echo "GitLab main branch does not exist, skipping merge."
-    - git gc --prune=now
-    - git repack -a -d --depth=250 --window=250
-    - git push --force --thin origin master
+    # - git checkout master || git checkout -B master origin/master
+    # - git fetch gitlab main || echo "gitlab main branch not found."
+    # - git branch -r | grep "gitlab/main" && git merge --allow-unrelated-histories gitlab/main || echo "GitLab main branch does not exist, skipping merge."
+    # - git gc --prune=now
+    # - git repack -a -d --depth=250 --window=250
+    # - git push --force --thin origin master
 #    - git merge --allow-unrelated-histories github/master || echo "No conflicts detected."
 
     # - git gc --prune=now
