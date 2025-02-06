@@ -4,14 +4,26 @@ stages:
 
 sync_to_github:
   stage: sync
-  script:
-    - apt-get update && apt-get install -y git
+  before_script:
+    - apt-get update && apt-get install -y git openssh-client
     - git --version
+
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+  script:
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
 
-    - git remote add github https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git || \
-      git remote set-url github https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git
+    - if git remote | grep -q "github"; then
+        git remote set-url github git@github.com:abenavid/tmp-collection.git;
+      else
+        git remote add github git@github.com:abenavid/tmp-collection.git;
+      fi
 
     - git fetch --all
     - git checkout -B main origin/main
@@ -21,7 +33,7 @@ sync_to_github:
     - git repack -A -d --depth=250 --window=250
 
     - echo "Attempting to push to GitHub..."
-    - git push --force --thin github main || \
+    - git push --force github main || \
       (echo "Push failed, retrying with repack..." && git gc --prune=now && git repack -A -d --depth=250 --window=250 && git push --force github main)
 
   tags:
