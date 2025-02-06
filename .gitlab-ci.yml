@@ -2,9 +2,8 @@ stages:
   - sync
   - build
 
-sync_from_github:
+sync_to_github:
   stage: sync
-  image: ubuntu:20.04
   script:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
@@ -12,39 +11,34 @@ sync_from_github:
     - |
       git remote add github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git || \
       git remote set-url github https://$GITHUB_PAT@github.com/abenavid/mock-collection.git
-    - |
-      git remote add gitlab https://username:$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
-      git remote set-url gitlab https://username:$GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
-    - git fetch github
-    - git checkout -B main github/main
-    - git fetch gitlab
-    - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected."
-    - git push gitlab main
+    - git fetch --all
+    - git checkout -B main origin/main
+    - git push --force github main
   tags:
     - internal
     - pah
 
-build_mock_collection_2:
-  stage: build
-  script:
-    - apt-get update && apt-get install -y python3 python3-pip
-    - pip3 install ansible-core
-    - mkdir -p output
-    - echo "Building collection for mock_namespace_2/mock_collection_2..."
-    - if [ -d "mock_namespace_2/mock_collection_2" ]; then
-        cd mock_namespace_2/mock_collection_2 || exit 1;
-        ansible-galaxy collection build --output-path=./output/ --force || echo "Collection build failed for mock_namespace_2/mock_collection_2!";
-        cd - || exit 1;
-      else
-        echo "Directory mock_namespace_2/mock_collection_2 does not exist!";
-        exit 1;
-      fi
-    - echo "Build complete. Output contents:"
-    - ls -al mock_namespace_2/mock_collection_2/output
-  artifacts:
-    paths:
-      - mock_namespace_2/mock_collection_2/output/*.tar.gz
-    expire_in: 1 week
-  tags:
-    - internal
-    - pah
+# build_mock_collection_2:
+#   stage: build
+#   script:
+#     - apt-get update && apt-get install -y python3 python3-pip
+#     - pip3 install ansible-core
+#     - mkdir -p output
+#     - echo "Building collection for mock_namespace_2/mock_collection_2..."
+#     - if [ -d "mock_namespace_2/mock_collection_2" ]; then
+#         cd mock_namespace_2/mock_collection_2 || exit 1;
+#         ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for mock_namespace_2/mock_collection_2!";
+#         cd - || exit 1;
+#       else
+#         echo "Directory mock_namespace_2/mock_collection_2 does not exist!";
+#         exit 1;
+#       fi
+#     - echo "Build complete. Output contents:"
+#     - ls -al output
+#   artifacts:
+#     paths:
+#       - output/*.tar.gz
+#     expire_in: 1 week
+#   tags:
+#     - internal
+#     - pah
