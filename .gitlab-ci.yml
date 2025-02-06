@@ -35,7 +35,7 @@ sync_to_github:
     - rm -rf tmp_repo
     - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
     - cd tmp_repo
-    - git remote add gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    - git remote add origin https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
     - git fetch --all
     - git remote -v
 
