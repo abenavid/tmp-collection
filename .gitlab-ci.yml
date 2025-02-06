@@ -1,0 +1,129 @@
+stages:
+  - sync
+
+sync_from_github:
+  stage: sync
+  script:
+    - apt-get update && apt-get install -y git
+    - git config --global user.email "abenavid@redhat.com"
+    - git config --global user.name "Alex Benavides"
+    
+    # Verify remotes
+    - git remote -v
+    - git fetch --all
+
+    # Checkout latest GitHub changes
+    - git checkout -B main github/master
+    - git merge --allow-unrelated-histories origin/main || echo "No conflicts detected."
+    
+    # Push merged updates to GitLab
+    - echo "Pushing GitHub repository into GitLab..."
+    - git push --force gitlab main
+    - git remote -v
+  tags:
+    - internal
+    - pah
+
+sync_to_github:
+  stage: sync
+  script:
+    # - apt-get update && apt-get install -y git
+    # - git config --global user.email "abenavid@redhat.com"
+    # - git config --global user.name "Alex Benavides"
+
+      # Navigate to your local repo
+      - cd /path/to/tmp_repo
+
+# Remove the sensitive line(s) from .gitlab-ci.yml
+      - nano .gitlab-ci.yml  # (or use vi, code, etc.)
+
+# If needed, manually remove any hardcoded secrets.
+
+      # Rewrite history to remove the secret
+      - git filter-branch --force --index-filter \
+        "git rm --cached --ignore-unmatch .gitlab-ci.yml" \
+        --prune-empty --tag-name-filter cat -- --all
+
+      # Re-add the cleaned-up .gitlab-ci.yml without secrets
+      - git add .gitlab-ci.yml
+      - git commit -m "Remove GitLab Access Token from .gitlab-ci.yml"
+
+      # Push the rewritten history (forced update to clean repository)
+      - git push --force github master
+
+
+    # - rm -rf tmp_repo
+    # - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
+    # - cd tmp_repo
+    # - git remote add gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    # - git fetch --all
+    # - git remote -v
+
+    # - git checkout master || git checkout -B master origin/master
+    # - git fetch gitlab main || echo "gitlab main branch not found."
+    # - git branch -r | grep "gitlab/main" && git merge --allow-unrelated-histories gitlab/main || echo "GitLab main branch does not exist, skipping merge."
+    # - git gc --prune=now
+    # - git repack -a -d --depth=250 --window=250
+    # - git push --force --thin origin master
+#    - git merge --allow-unrelated-histories github/master || echo "No conflicts detected."
+
+    # - git gc --prune=now
+    # - git repack -a -d --depth=250 --window=250
+    # - git branch -r  
+    # - git ls-remote --heads gitlab
+    # - git push --force --thin github master 
+
+
+    # # Configure Git
+    # - git config --global user.email "abenavid@redhat.com"
+    # - git config --global user.name "Alex Benavides"
+
+    # # Clone the GitHub repository into the GitLab pipeline
+    # - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git github_repo
+
+    # # Change into the cloned GitHub directory
+    # - cd github_repo
+
+    # # Add GitLab as a remote
+    # #- git remote add gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
+    # - git remote set-url gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+
+    # - git fetch gitlab
+    # # Fetch latest changes from both repositories
+    # - git checkout -B main origin/main
+
+    # # Force push GitHub repository contents into GitLab
+    # - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected."
+
+    # # Push the merged version to GitLab
+    # - echo "Pushing GitHub repository into GitLab..."
+    # - git push --force gitlab main
+  tags:
+    - internal
+    - pah
+
+
+# build_mock_collection_2:
+#   stage: build
+#   script:
+#     - apt-get update && apt-get install -y python3 python3-pip
+#     - pip3 install ansible-core
+#     - mkdir -p output
+#     - echo "Building collection for mock_namespace_2/mock_collection_2..."
+#     - if [ -d "mock_namespace_2/mock_collection_2" ]; then
+#         cd mock_namespace_2/mock_collection_2 || exit 1;
+#         ansible-galaxy collection build --output-path=../../../output --force || echo "Collection build failed for mock_namespace_2/mock_collection_2!";
+#         cd - || exit 1;
+#       else
+#         echo "Directory mock_namespace_2/mock_collection_2 does not exist!";
+#         exit 1;
+#       fi
+#     - echo "Build complete. Output contents:"
+#     - ls -al output
+#   artifacts:
+#     paths:
+#       - output/*.tar.gz
+#     expire_in: 1 week
+#   tags:
+#     - internal
+#     - pah
