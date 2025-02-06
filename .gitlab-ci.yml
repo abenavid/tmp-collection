@@ -30,22 +30,29 @@ sync_to_github:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
+
     - git fetch --all
     - git remote -v
-
+    - git branch -r  
+    - git ls-remote --heads gitlab
 
     - rm -rf tmp_repo
+
     - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
     - cd tmp_repo
-    
-    - git checkout -B main gitlab/main || git checkout main
-    - git pull gitlab main  # Ensure latest changes
+
+    - git remote add gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || git remote set-url gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    - git fetch gitlab
+
+    - git checkout -B main gitlab/main || git checkout --track gitlab/main || git checkout -B main origin/main || echo "No existing main branch. Creating a new one."
+    - git pull gitlab main || echo "Already up to date."
+
     - git merge --allow-unrelated-histories github/master || echo "No conflicts detected."
 
     - git gc --prune=now
     - git repack -a -d --depth=250 --window=250
-    - git branch -r  
-    - git ls-remote --heads gitlab
+
+    - git push --force --thin github main
 
 
     # # Configure Git
