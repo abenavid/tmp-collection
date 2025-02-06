@@ -5,33 +5,35 @@ stages:
 sync_from_github:
   stage: sync
   script:
-    # Install Git
+    # # Install Git
     - apt-get update && apt-get install -y git
+    - git remote -v
 
-    # Configure Git
-    - git config --global user.email "abenavid@redhat.com"
-    - git config --global user.name "Alex Benavides"
 
-    # Clone the GitHub repository into the GitLab pipeline
-    - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git github_repo
+    # # Configure Git
+    # - git config --global user.email "abenavid@redhat.com"
+    # - git config --global user.name "Alex Benavides"
 
-    # Change into the cloned GitHub directory
-    - cd github_repo
+    # # Clone the GitHub repository into the GitLab pipeline
+    # - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git github_repo
 
-    # Add GitLab as a remote
-    #- git remote add gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
-    - git remote set-url gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    # # Change into the cloned GitHub directory
+    # - cd github_repo
 
-    - git fetch gitlab
-    # Fetch latest changes from both repositories
-    - git checkout -B main origin/main
+    # # Add GitLab as a remote
+    # #- git remote add gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
+    # - git remote set-url gitlab https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
 
-    # Force push GitHub repository contents into GitLab
-    - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected."
+    # - git fetch gitlab
+    # # Fetch latest changes from both repositories
+    # - git checkout -B main origin/main
 
-    # Push the merged version to GitLab
-    - echo "Pushing GitHub repository into GitLab..."
-    - git push --force gitlab main
+    # # Force push GitHub repository contents into GitLab
+    # - git merge --allow-unrelated-histories gitlab/main || echo "No conflicts detected."
+
+    # # Push the merged version to GitLab
+    # - echo "Pushing GitHub repository into GitLab..."
+    # - git push --force gitlab main
   tags:
     - internal
     - pah
