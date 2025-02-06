@@ -30,10 +30,14 @@ sync_to_github:
     - git gc --prune=now
     - git repack -A -d --depth=250 --window=250
 
-    # Attempt to push to GitHub
+    # Push to GitHub with a retry mechanism
     - echo "Pushing to GitHub..."
-    - git push --force github main || \
-      (echo "Push failed, retrying with repack..." && git gc --prune=now && git repack -A -d --depth=250 --window=250 && git push --force github main)
+    - git push --force github main || (
+        echo "Push failed, retrying cleanup..."
+        git gc --prune=now
+        git repack -A -d --depth=250 --window=250
+        git push --force github main
+      )
 
   tags:
     - internal
