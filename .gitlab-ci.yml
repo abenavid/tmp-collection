@@ -12,7 +12,7 @@ sync_from_github:
     - git fetch --all
     - git checkout -B main github/master
     - git merge --allow-unrelated-histories origin/main || echo "No conflicts detected."
-    - git push --force origin main
+    - git push --force gitlab main
     - git remote -v
 
 
