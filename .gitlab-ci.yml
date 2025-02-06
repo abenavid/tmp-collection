@@ -7,6 +7,8 @@ sync_from_github:
   script:
     # # Install Git
     - apt-get update && apt-get install -y git
+    - git config --global user.email "abenavid@redhat.com"
+    - git config --global user.name "Alex Benavides"
     - git remote -v
     - git fetch --all
     - git checkout -B main github/master
