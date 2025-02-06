@@ -36,16 +36,16 @@ sync_to_github:
 
     - rm -rf tmp_repo
     - git clone https://$TMP_GITHUB_PAT@github.com/abenavid/tmp-collection.git tmp_repo
-    - git branch -r  
-    - git ls-remote --heads gitlab
     - cd tmp_repo
-    - git checkout -B master gitlab/main
-    - git merge gitlab/main 
+    
+    - git checkout -B main gitlab/main || git checkout main
+    - git pull gitlab main  # Ensure latest changes
+    - git merge --allow-unrelated-histories github/master || echo "No conflicts detected."
 
     - git gc --prune=now
     - git repack -a -d --depth=250 --window=250
-
-    - git push --force --thin github master 
+    - git branch -r  
+    - git ls-remote --heads gitlab
 
 
     # # Configure Git
