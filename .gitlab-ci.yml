@@ -3,7 +3,7 @@ stages:
   - build
 
 sync_to_github:
-  image: ubuntu:20.04
+  stage: sync
   script:
     # Install Git
     - apt-get update && apt-get install -y git
