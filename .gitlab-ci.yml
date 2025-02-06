@@ -19,8 +19,8 @@ sync_from_github:
     - cd github_repo
 
     # Add GitLab as a remote
-    - git remote add gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
-      git remote set-url gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
+    #- git remote add gitlab https://$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git || \
+    - git remote set-url origin https://abenavid:$TMP_GITLAB_PAT@gitlab.consulting.redhat.com/internal-ansible-library/test.git
 
     # Fetch latest changes from both repositories
     - git fetch --all
