@@ -1,5 +1,6 @@
 stages:
   - sync
+  - build
 
 sync_to_github:
   image: ubuntu:20.04
