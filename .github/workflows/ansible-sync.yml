@@ -22,17 +22,23 @@ jobs:
           API_KEY: ${{ secrets.PAH_API_KEY }}
         run: |
           for dir in ./name_of_namespace/*; do
+            echo "Checking $dir"
             if [ -d "$dir" ]; then
               echo "🔨 Building collection in $dir"
               ansible-galaxy collection build "$dir"
-              
-              TAR_FILE=$(ls "$dir"/build_artifacts/*.tar.gz)
-              echo "📦 Built collection: $TAR_FILE"
-
-              echo "🚀 Publishing $TAR_FILE"
-              ansible-galaxy collection publish "$TAR_FILE" \
-                --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
-                --api-key $API_KEY
+        
+              TAR_FILE=$(ls "$dir"/build_artifacts/*.tar.gz 2>/dev/null || echo "NO_TAR_FOUND")
+              if [ "$TAR_FILE" != "NO_TAR_FOUND" ]; then
+                echo "📦 Built collection: $TAR_FILE"
+                echo "🚀 Publishing $TAR_FILE"
+                ansible-galaxy collection publish "$TAR_FILE" \
+                  --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
+                  --api-key $API_KEY
+              else
+                echo "❗ No .tar.gz file found in $dir/build_artifacts/"
+              fi
+            else
+              echo "❗ Skipping $dir (not a directory)"
             fi
           done
 
