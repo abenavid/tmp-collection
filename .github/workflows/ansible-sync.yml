@@ -3,6 +3,7 @@ name: Monthly Ansible Collection Sync
 on:
   schedule:
     - cron: '0 0 1 * *'  # Runs at midnight on the 1st of each month
+  workflow_dispatch: 
 
 jobs:
   sync-ansible-collections:
