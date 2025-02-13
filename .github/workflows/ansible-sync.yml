@@ -20,20 +20,6 @@ jobs:
           sudo apt-get update && sudo apt-get install -y python3 python3-pip
           pip3 install ansible-core
 
-      - name: Check DIR
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -l
-          for dir in ./tmp-collection/name_of_namespace/*; do
-            echo "Checking $dir"
-            if [ -d "$dir" ]; then
-              echo "🔨 Building collection in $dir"
-              ansible-galaxy collection build "$dir"
-            else
-              echo "❗ Skipping $dir (not a directory)"
-            fi
-          done
-          
       # Loop through each collection directory and build/publish
       - name: Build and Publish Collections
         env:
