@@ -43,17 +43,17 @@ jobs:
             echo "Checking $dir"
             if [ -d "$dir" ]; then
               echo "🔨 Building collection in $dir"
-              ansible-galaxy collection build "$dir"
-        
-              TAR_FILE=$(ls "$dir"/build_artifacts/*.tar.gz 2>/dev/null || echo "NO_TAR_FOUND")
-              if [ "$TAR_FILE" != "NO_TAR_FOUND" ]; then
+              ansible-galaxy collection build "$dir" --force
+              
+              TAR_FILE=$(find "$dir" -name "*.tar.gz" | head -n 1)
+              if [ -n "$TAR_FILE" ]; then
                 echo "📦 Built collection: $TAR_FILE"
                 echo "🚀 Publishing $TAR_FILE"
                 ansible-galaxy collection publish "$TAR_FILE" \
                   --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
                   --api-key $API_KEY
               else
-                echo "❗ No .tar.gz file found in $dir/build_artifacts/"
+                echo "❗ No .tar.gz file found for $dir"
               fi
             else
               echo "❗ Skipping $dir (not a directory)"
