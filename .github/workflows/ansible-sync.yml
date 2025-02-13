@@ -1,0 +1,46 @@
+name: Monthly Ansible Collection Sync
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Runs at midnight on the 1st of each month
+
+jobs:
+  sync-ansible-collections:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Install required system packages and Ansible Core
+      - name: Install Python3, pip, and Ansible Core
+        run: |
+          sudo apt-get update && sudo apt-get install -y python3 python3-pip
+          pip3 install ansible-core
+
+      # Loop through each collection directory and build/publish
+      - name: Build and Publish Collections
+        env:
+          API_KEY: ${{ secrets.PAH_API_KEY }}
+        run: |
+          for dir in ./name_of_namespace/*; do
+            if [ -d "$dir" ]; then
+              echo "🔨 Building collection in $dir"
+              ansible-galaxy collection build "$dir"
+              
+              TAR_FILE=$(ls "$dir"/build_artifacts/*.tar.gz)
+              echo "📦 Built collection: $TAR_FILE"
+
+              echo "🚀 Publishing $TAR_FILE"
+              ansible-galaxy collection publish "$TAR_FILE" \
+                --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
+                --api-key $API_KEY
+            fi
+          done
+
+      # Notify Success
+      - name: Success Notification
+        if: ${{ success() }}
+        run: echo "✅ All Ansible collections built and synced successfully."
+
+      # Notify Failure
+      - name: Failure Notification
+        if: ${{ failure() }}
+        run: echo "❌ Ansible collection build or sync failed."
