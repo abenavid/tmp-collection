@@ -45,7 +45,7 @@ jobs:
               echo "🔨 Building collection in $dir"
               ansible-galaxy collection build "$dir" --force
               
-              TAR_FILE=$(find "$dir" -name "*.tar.gz" | head -n 1)
+              TAR_FILE=$(find ./ -name "*.tar.gz" | grep "$dir" | head -n 1)
               if [ -n "$TAR_FILE" ]; then
                 echo "📦 Built collection: $TAR_FILE"
                 echo "🚀 Publishing $TAR_FILE"
