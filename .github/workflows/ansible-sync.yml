@@ -29,7 +29,7 @@ jobs:
               for collection in "$namespace"/*; do
                 if [ -d "$collection" ]; then
                   echo "🚀 Building collection: $collection"
-                  ansible-galaxy collection build "$collection" --output-path "$collection"
+                  ansible-galaxy collection build "$collection" --output-path "$collection" --force
                   
                   # Locate the tar file (ensure it's correctly placed)
                   TAR_FILE=$(find "$collection" -maxdepth 1 -name '*.tar.gz' | head -n 1)
@@ -40,8 +40,7 @@ jobs:
                     echo "📡 Publishing $TAR_FILE"
                     ansible-galaxy collection publish "$TAR_FILE" \
                       --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
-                      --api-key ${{ secrets.PAH_API_KEY }} \
-                      --force
+                      --api-key ${{ secrets.PAH_API_KEY }}
                   else
                     echo "❌ ERROR: No .tar.gz file found for $collection"
                     exit 1
