@@ -2,7 +2,7 @@
 namespace: eda
 name: name_of_collection
 
-version: 1.0.0
+version: 1.0.2
 readme: README.md
 
 authors:
