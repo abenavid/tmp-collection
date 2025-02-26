@@ -23,40 +23,43 @@ jobs:
       # Build and Publish Collections for all namespaces
       - name: Build and Publish Collections
         run: |
-          for namespace in namespaces/*; do
-            if [ -d "$namespace" ]; then
-              echo "📂 Processing namespace: $namespace"
-              for collection in "$namespace"/*; do
-                if [ -d "$collection" ]; then
-                  echo "🚀 Building collection: $collection"
-                  
-                  # Check if version exists and increment it dynamically
-                  VERSION_FILE="$collection/galaxy.yml"
-                  if [ -f "$VERSION_FILE" ]; then
-                    CURRENT_VERSION=$(grep "version:" "$VERSION_FILE" | awk '{print $2}')
-                    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. -v OFS=. '{$NF++; print}')
-                    sed -i "s/version: $CURRENT_VERSION/version: $NEW_VERSION/" "$VERSION_FILE"
-                    echo "🔄 Updated version to $NEW_VERSION"
-                  fi
-                  
-                  ansible-galaxy collection build "$collection" --output-path "$collection" --force
-                  
-                  # Locate the tar file
-                  TAR_FILE=$(find "$collection" -maxdepth 1 -name '*.tar.gz' | head -n 1)
-                  
-                  if [ -f "$TAR_FILE" ]; then
-                    echo "📦 Built collection: $TAR_FILE"
-                    
-                    echo "📡 Publishing $TAR_FILE"
-                    ansible-galaxy collection publish "$TAR_FILE" \
-                      --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
-                      --api-key ${{ secrets.PAH_API_KEY }}
-                  else
-                    echo "❌ ERROR: No .tar.gz file found for $collection"
-                    exit 1
-                  fi
-                fi
-              done
+          # Fetch the latest changes
+          git fetch origin main  # Ensure we are comparing against the latest main branch
+          
+          # Get a list of changed collections
+          CHANGED_COLLECTIONS=$(git diff --name-only HEAD~1 HEAD | grep "^namespaces/" | cut -d'/' -f2,3 | sort -u)
+          
+          if [ -z "$CHANGED_COLLECTIONS" ]; then
+            echo "✅ No collections have changed. Skipping build and publish."
+            exit 0
+          fi
+          
+          # Iterate over each changed collection
+          for collection in $CHANGED_COLLECTIONS; do
+            namespace=$(echo "$collection" | cut -d'/' -f1)
+            collection_name=$(echo "$collection" | cut -d'/' -f2)
+          
+            # Skip if not a valid directory
+            if [ ! -d "namespaces/$namespace/$collection_name" ]; then
+              continue
+            fi
+          
+            echo "🚀 Processing changed collection: $namespace/$collection_name"
+          
+            # Build the collection
+            ansible-galaxy collection build "namespaces/$namespace/$collection_name" --output-path "namespaces/$namespace/$collection_name" --force
+          
+            # Find the generated tar file
+            TAR_FILE=$(find "namespaces/$namespace/$collection_name" -maxdepth 1 -name '*.tar.gz' | head -n 1)
+          
+            if [ -f "$TAR_FILE" ]; then
+              echo "📡 Publishing $TAR_FILE"
+              ansible-galaxy collection publish "$TAR_FILE" \
+                --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
+                --api-key ${{ secrets.PAH_API_KEY }}
+            else
+              echo "❌ ERROR: No .tar.gz file found for $namespace/$collection_name"
+              exit 1
             fi
           done
 
