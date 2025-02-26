@@ -29,9 +29,19 @@ jobs:
               for collection in "$namespace"/*; do
                 if [ -d "$collection" ]; then
                   echo "🚀 Building collection: $collection"
+                  
+                  # Check if version exists and increment it dynamically
+                  VERSION_FILE="$collection/galaxy.yml"
+                  if [ -f "$VERSION_FILE" ]; then
+                    CURRENT_VERSION=$(grep "version:" "$VERSION_FILE" | awk '{print $2}')
+                    NEW_VERSION=$(echo "$CURRENT_VERSION" | awk -F. -v OFS=. '{$NF++; print}')
+                    sed -i "s/version: $CURRENT_VERSION/version: $NEW_VERSION/" "$VERSION_FILE"
+                    echo "🔄 Updated version to $NEW_VERSION"
+                  fi
+                  
                   ansible-galaxy collection build "$collection" --output-path "$collection" --force
                   
-                  # Locate the tar file (ensure it's correctly placed)
+                  # Locate the tar file
                   TAR_FILE=$(find "$collection" -maxdepth 1 -name '*.tar.gz' | head -n 1)
                   
                   if [ -f "$TAR_FILE" ]; then
@@ -49,6 +59,7 @@ jobs:
               done
             fi
           done
+
 
 
       # # Notify via Slack on Success
