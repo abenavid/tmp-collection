@@ -43,18 +43,18 @@ jobs:
             fi
           done
 
-      # Notify via Slack on Success
-      - name: Slack Notification (Success)
-        if: ${{ success() }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"✅ Ansible collections built and synced successfully."}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+      # # Notify via Slack on Success
+      # - name: Slack Notification (Success)
+      #   if: ${{ success() }}
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' \
+      #       --data '{"text":"✅ Ansible collections built and synced successfully."}' \
+      #       ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      # Notify via Slack on Failure
-      - name: Slack Notification (Failure)
-        if: ${{ failure() }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"❌ Ansible collection build or sync failed."}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+      # # Notify via Slack on Failure
+      # - name: Slack Notification (Failure)
+      #   if: ${{ failure() }}
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' \
+      #       --data '{"text":"❌ Ansible collection build or sync failed."}' \
+      #       ${{ secrets.SLACK_WEBHOOK_URL }}
