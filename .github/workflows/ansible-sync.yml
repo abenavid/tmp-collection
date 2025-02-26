@@ -3,55 +3,58 @@ name: Monthly Ansible Collection Sync
 on:
   schedule:
     - cron: '0 0 1 * *'  # Runs at midnight on the 1st of each month
-  workflow_dispatch: 
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   sync-ansible-collections:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
-      - name: Checkout code
+      # Checkout Repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
-        
+
       # Install required system packages and Ansible Core
       - name: Install Python3, pip, and Ansible Core
         run: |
           sudo apt-get update && sudo apt-get install -y python3 python3-pip
           pip3 install ansible-core
 
-      # Loop through each collection directory and build/publish
+      # Build and Publish Collections for all namespaces
       - name: Build and Publish Collections
-        env:
-          API_KEY: ${{ secrets.PAH_API_KEY }}
         run: |
-          for dir in ./name_of_namespace/*; do
-            echo "Checking $dir"
-            if [ -d "$dir" ]; then
-              echo "🔨 Building collection in $dir"
-              ansible-galaxy collection build "$dir" --force
-              
-              TAR_FILE=$(find ./ -name "*.tar.gz" | grep "$(basename "$dir")" | head -n 1)
-              if [ -n "$TAR_FILE" ]; then
-                echo "📦 Built collection: $TAR_FILE"
-                echo "🚀 Publishing $TAR_FILE"
-                ansible-galaxy collection publish "$TAR_FILE" \
-                  --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
-                  --api-key $API_KEY
-              else
-                echo "❗ No .tar.gz file found for $dir"
-              fi
-            else
-              echo "❗ Skipping $dir (not a directory)"
+          for namespace in namespaces/*; do
+            if [ -d "$namespace" ]; then
+              echo "📂 Processing namespace: $namespace"
+              for collection in "$namespace"/*; do
+                if [ -d "$collection" ]; then
+                  echo "🚀 Building collection: $collection"
+                  ansible-galaxy collection build "$collection"
+                  
+                  TAR_FILE=$(ls "$collection"/build_artifacts/*.tar.gz)
+                  echo "📦 Built collection: $TAR_FILE"
+                  
+                  echo "📡 Publishing $TAR_FILE"
+                  ansible-galaxy collection publish "$TAR_FILE" \
+                    --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
+                    --api-key ${{ secrets.ANSIBLE_API_KEY }}
+                fi
+              done
             fi
           done
 
-      # Notify Success
-      - name: Success Notification
+      # Notify via Slack on Success
+      - name: Slack Notification (Success)
         if: ${{ success() }}
-        run: echo "✅ All Ansible collections built and synced successfully."
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"✅ Ansible collections built and synced successfully."}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      # Notify Failure
-      - name: Failure Notification
+      # Notify via Slack on Failure
+      - name: Slack Notification (Failure)
         if: ${{ failure() }}
-        run: echo "❌ Ansible collection build or sync failed."
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"❌ Ansible collection build or sync failed."}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
