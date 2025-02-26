@@ -29,19 +29,27 @@ jobs:
               for collection in "$namespace"/*; do
                 if [ -d "$collection" ]; then
                   echo "🚀 Building collection: $collection"
-                  ansible-galaxy collection build "$collection"
+                  ansible-galaxy collection build "$collection" --output-path "$collection"
                   
-                  TAR_FILE=$(ls "$collection"/build_artifacts/*.tar.gz)
-                  echo "📦 Built collection: $TAR_FILE"
+                  # Locate the tar file (ensure it's correctly placed)
+                  TAR_FILE=$(find "$collection" -maxdepth 1 -name '*.tar.gz' | head -n 1)
                   
-                  echo "📡 Publishing $TAR_FILE"
-                  ansible-galaxy collection publish "$TAR_FILE" \
-                    --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
-                    --api-key ${{ secrets.ANSIBLE_API_KEY }}
+                  if [ -f "$TAR_FILE" ]; then
+                    echo "📦 Built collection: $TAR_FILE"
+                    
+                    echo "📡 Publishing $TAR_FILE"
+                    ansible-galaxy collection publish "$TAR_FILE" \
+                      --server https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/api/galaxy/ \
+                      --api-key ${{ secrets.ANSIBLE_API_KEY }}
+                  else
+                    echo "❌ ERROR: No .tar.gz file found for $collection"
+                    exit 1
+                  fi
                 fi
               done
             fi
           done
+
 
       # # Notify via Slack on Success
       # - name: Slack Notification (Success)
