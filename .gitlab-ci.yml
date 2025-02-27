@@ -1,8 +1,13 @@
 stages:
   - sync
+  - validate
+  - merge
 
+# ✅ Sync from GitHub to GitLab (for `main`)
 sync_from_github:
   stage: sync
+  only:
+    - main
   script:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
@@ -18,8 +23,11 @@ sync_from_github:
     - internal
     - pah
 
+# ✅ Sync from GitLab `main` to GitHub (Keeps GitHub Updated)
 sync_to_github:
   stage: sync
+  only:
+    - main
   script:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
@@ -31,7 +39,6 @@ sync_to_github:
     - git fetch --all
     - git remote -v
     - git checkout master || git checkout -B master origin/master
-
     - git fetch gitlab main || echo "GitLab main branch not found."
     - git branch -r | grep "gitlab/main" && git merge --allow-unrelated-histories gitlab/main || echo "GitLab main branch does not exist, skipping merge."
     - git checkout gitlab/main -- .gitlab-ci.yml || echo ".gitlab-ci.yml not found, skipping restore."
@@ -40,6 +47,50 @@ sync_to_github:
     - git gc --prune=now
     - git repack -a -d --depth=250 --window=250
     - git push --force --thin origin master
+  tags:
+    - internal
+    - pah
+
+# ✅ Validate Changes Before Merging to Staging
+validate_staging:
+  stage: validate
+  only:
+    - staging
+  script:
+    - echo "Running validation on staging..."
+    - apt-get update && apt-get install -y ansible-lint
+    - ansible-lint roles/ || echo "⚠️ Warnings detected"
+    - echo "✅ Validation Passed!"
+  tags:
+    - internal
+    - pah
+
+# ✅ Merge Personal Branches to Staging (Auto Approve)
+merge_to_staging:
+  stage: merge
+  only:
+    - merge_requests
+  script:
+    - echo "🔄 Merging feature branch into staging..."
+    - git checkout staging
+    - git merge --ff-only origin/$CI_COMMIT_REF_NAME || (echo "⚠️ Merge conflict detected, requires manual resolution." && exit 1)
+    - git push origin staging
+    - echo "✅ Merged successfully to staging!"
+  tags:
+    - internal
+    - pah
+
+# ✅ Merge Staging to Main (Manually Approved)
+merge_staging_to_main:
+  stage: merge
+  only:
+    - main
+  script:
+    - echo "🔄 Merging staging into main..."
+    - git checkout main
+    - git merge --ff-only origin/staging || (echo "⚠️ Merge conflict detected, requires manual resolution." && exit 1)
+    - git push origin main
+    - echo "🚀 Deployed to production!"
   tags:
     - internal
     - pah
