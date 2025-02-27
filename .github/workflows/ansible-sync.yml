@@ -3,31 +3,26 @@ name: Monthly Ansible Collection Sync
 on:
   schedule:
     - cron: '0 0 1 * *'  # Runs at midnight on the 1st of each month
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:  # Allow manual triggering
 
 jobs:
   sync-ansible-collections:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Ensures full commit history is available
 
-
-      # Install required system packages and Ansible Core
       - name: Install Python3, pip, and Ansible Core
         run: |
           sudo apt-get update && sudo apt-get install -y python3 python3-pip
           pip3 install ansible-core
 
-      # Build and Publish Collections for all namespaces
       - name: Build and Publish Collections
         run: |
-          # Fetch the latest changes
-          git fetch origin master  # Ensure we are comparing against the latest main branch
+          git fetch origin master 
           
           # Get a list of changed collections
           CHANGED_COLLECTIONS=$(git diff --name-only HEAD~1 HEAD | grep "^namespaces/" | cut -d'/' -f2,3 | sort -u)
