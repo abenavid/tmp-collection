@@ -1,6 +1,5 @@
 stages:
   - sync
-  - validate
   - merge
 
 # ✅ Sync from GitHub to GitLab (for `main`)
@@ -51,50 +50,45 @@ sync_to_github:
     - internal
     - pah
 
-# ✅ Validate Changes Before Merging to Staging
-validate_staging:
-  stage: validate
+# ✅ Sync Personal Branches to Staging
+sync_to_staging:
+  stage: sync
   only:
+    - /^.*$/  # Runs on any branch except protected ones
+  except:
+    - main
     - staging
-  script:
-    - echo "Running validation on staging..."
-    - apt-get update && apt-get install -y ansible-lint
-    - ansible-lint roles/ || echo "⚠️ Warnings detected"
-    - echo "✅ Validation Passed!"
-  tags:
-    - internal
-    - pah
-
-# ✅ Merge Personal Branches to Staging (Auto Approve)
-merge_to_staging:
-  stage: merge
-  only:
-    - merge_requests
-  script:
-    - echo "🔄 Merging feature branch into staging..."
-    - git checkout staging
-    - git merge --ff-only origin/$CI_COMMIT_REF_NAME || (echo "⚠️ Merge conflict detected, requires manual resolution." && exit 1)
-    - git push origin staging
-    - echo "✅ Merged successfully to staging!"
-  tags:
-    - internal
-    - pah
-
-# ✅ Merge Staging to Main (Manually Approved)
-merge_staging_to_main:
-  stage: merge
   script:
     - apt-get update && apt-get install -y git
     - git config --global user.email "abenavid@redhat.com"
     - git config --global user.name "Alex Benavides"
-    - echo "🔄 Fetching latest updates..."
+    - git remote -v
     - git fetch --all
-    - echo "🔀 Checking out main branch..."
+    - git checkout -B staging origin/staging || git checkout -B staging
+    - echo "Merging current branch ($CI_COMMIT_REF_NAME) into staging..."
+    - git merge --no-edit $CI_COMMIT_REF_NAME || echo "No conflicts detected."
+    - echo "Pushing changes to staging..."
+    - git push gitlab staging
+  tags:
+    - internal
+    - pah
+
+# ✅ Merge Staging to Main (Auto-merge)
+merge_staging_to_main:
+  stage: merge
+  only:
+    - main
+  script:
+    - apt-get update && apt-get install -y git
+    - git config --global user.email "abenavid@redhat.com"
+    - git config --global user.name "Alex Benavides"
+    - git remote -v
+    - git fetch --all
     - git checkout main
-    - echo "🚀 Merging staging into main..."
-    - git merge staging --no-edit || echo "No conflicts detected."
-    - echo "📤 Pushing changes to main..."
-    - git push origin main
+    - echo "Merging staging into main..."
+    - git merge --no-edit origin/staging || echo "No conflicts detected."
+    - echo "Pushing merged changes to main..."
+    - git push gitlab main
   tags:
     - internal
     - pah
