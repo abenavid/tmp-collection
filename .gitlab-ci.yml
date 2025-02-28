@@ -65,10 +65,12 @@ sync_to_staging:
     - git remote -v
     - git fetch --all
     - git checkout -B staging origin/staging || git checkout -B staging
-    - echo "Merging current branch ($CI_COMMIT_REF_NAME) into staging..."
-    - git merge --no-edit $CI_COMMIT_REF_NAME || echo "No conflicts detected."
-    - echo "Pushing changes to staging..."
-    - git push gitlab staging
+    - echo "🔄 Merging current branch ($CI_COMMIT_REF_NAME) into staging..."
+    - git merge --no-edit origin/$CI_COMMIT_REF_NAME || echo "No conflicts detected."
+
+    # Ensure we push if merge was successful, even if fast-forwarded
+    - echo "🔍 Checking if push is needed..."
+    - git push --force gitlab staging || echo "✅ Staging already up to date."
   tags:
     - internal
     - pah
