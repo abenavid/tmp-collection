@@ -1,93 +1,90 @@
-# test2
+# Ansible Collection Development and Deployment Workflow
 
+This document outlines the workflow for developing, reviewing, and deploying Ansible collections within Red Hat’s internal Ansible Library.
 
+## 🚀 Workflow Overview
 
-## Getting started
+1. **Consultant Creates a Personal Branch and Develops a Collection**  
+   - Consultant creates a **personal branch** off of `staging`.
+        -  ``` git checkout -b my-feature-branch origin/staging ```
+   - Develop a new collection or update an existing one.
+   - Choose the Appropriate Namespace
+        - Before creating a new collection, check the existing namespaces under the `namespaces/` directory.  
+        - If you believe a new namespace is required, reach out to the **Ansible Library Admins** for approval.
+    - Initialize the Collection Structure
+        -  ```ansible-galaxy collection init my_namespace.my_collection```
+    - Navigate to the Collection Directory
+        - ``` cd my_namespace/my_collection```
+    - Add Roles, Plugins, and Modules
+        - Place roles in `roles/`
+        - Add plugins in `plugins/`
+        - Define modules in `modules/`
+        - Include documentation in `docs/`
+    - Define Collection Metadata
+        - Edit the galaxy.yml file and ensure it includes relevant metadata such as:
+        ``` yaml
+        namespace: my_namespace
+        name: my_collection
+        version: 1.0.0 # If updating an existing collection please increment the version to not cause any breaks
+        description: A brief description of the collection.
+        ```
+   - When ready, **push changes** (this automatically syncs the branch with `staging`).
+        ```
+        git add .
+        git commit -m "Initialized new collection my_namespace.my_collection"
+        git push origin my-feature-branch
+        ```
+   - *TODO: CICD pipeline should include the following:*
+        - *ansible-lint to enforce best practices.*
+        - *A customer data scrubber to prevent sensitive data leaks.*
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+2. **Ansible Library Admins Review Changes and Merge To Main**  
+   - **Ansible Library Admins** manually create a **pull request** from `staging` to `main`.
+   - Admins review the incoming changes and **approve or request modifications**.
+   - Incoming changes are reviewed manually for quality and security.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+3. **Sync GitHub (Public) and GitLab (Private)**  
+   - CI/CD **syncs GitHub** (public) → **GitLab** (private) to ensure they  remain synchronized.
+   - CI/CD **pushes new changes** from **GitLab to GitHub** after approval.
 
-## Add your files
+4. **Automated Collection Build & Publish**  
+   - On the **1st of every month** (or manually triggered), GitHub CI/CD pipeline:
+     - Builds **only new or updated** collections.
+     - Publishes them to **[Private Automation Hub](https://platform.cus-l3n9so.aws.ansiblecloud.redhat.com/content/collections?page=1&perPage=10&sort=name)**.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+5. **Collection Approval in Private Automation Hub**  
+   - **Ansible Library Admins** review and approve the new collection.
+   - Once approved, the collection becomes **available to Red Hat consultants**.
 
-```
-cd existing_repo
-git remote add origin https://gitlab.consulting.redhat.com/internal-ansible-library/test.git
-git branch -M main
-git push -uf origin main
-```
+---
 
-## Integrate with your tools
+## 🔄 CI/CD Automation Breakdown
 
-- [ ] [Set up project integrations](https://gitlab.consulting.redhat.com/internal-ansible-library/test/-/settings/integrations)
+| Step | Trigger | Action |
+|------|---------|--------|
+| **Personal Branch Sync** | Consultant push to personal branch | Auto-merges to `staging` |
+| **Staging to Main Review** | Manual PR creation | Admins review and approve |
+| **GitHub ↔ GitLab Sync** | New changes in `main` | Ensures public/private parity |
+| **Collection Build & Publish** | Monthly/Manual Trigger | Publishes updated collections |
+| **Automation Hub Approval** | Manual Admin Review | Makes collection available |
 
-## Collaborate with your team
+---
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+## 🔧 Future Enhancements
+- Add **Ansible-linter** for code validation before syncing to `staging`.
+- Implement a **customer data scrubber** to prevent sensitive information in collections.
+- Introduce **Slack notification alerts** when collections are ready for review in Automation Hub.
 
-## Test and Deploy
+---
 
-Use the built-in continuous integration in GitLab.
+## 📞 Contact Us
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+If you have any questions, need assistance, or require a new namespace, please reach out to the **Ansible Library Admins**:
 
-***
+| Name            | Email Address           |
+|----------------|------------------------|
+| Alex Benavides | abenavid@redhat.com  |
+| John Best      | jbest@redhat.com     |
+| Walter Bentley | wbentley@redhat.com  |
 
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+For general inquiries, you can also reach us via the **Slack**
