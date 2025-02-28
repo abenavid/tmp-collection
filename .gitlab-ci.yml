@@ -68,6 +68,14 @@ sync_to_staging:
     - echo "Merging current branch ($CI_COMMIT_REF_NAME) into staging..."
     - git merge --no-edit origin/$CI_COMMIT_REF_NAME || echo "No conflicts detected."
     - echo "✅ Merge complete. No need to push staging."
+    
+    # Ensure we push only if there are actual changes
+    - if [ "$(git status --porcelain)" ]; then
+        echo "Changes detected, pushing to staging...";
+        git push --force gitlab staging;
+      else
+        echo "✅ No new changes to push.";
+      fi
   tags:
     - internal
     - pah
