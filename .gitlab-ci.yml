@@ -65,17 +65,12 @@ sync_to_staging:
     - git remote -v
     - git fetch --all
     - git checkout -B staging origin/staging || git checkout -B staging
-    - echo "Merging current branch ($CI_COMMIT_REF_NAME) into staging..."
+    - echo "🔄 Merging current branch ($CI_COMMIT_REF_NAME) into staging..."
     - git merge --no-edit origin/$CI_COMMIT_REF_NAME || echo "No conflicts detected."
-    - echo "✅ Merge complete. No need to push staging."
-    
-    # Ensure we push only if there are actual changes
-    - if [ "$(git status --porcelain)" ]; then
-        echo "Changes detected, pushing to staging...";
-        git push --force gitlab staging;
-      else
-        echo "✅ No new changes to push.";
-      fi
+
+    # Ensure we push if merge was successful, even if fast-forwarded
+    - echo "🔍 Checking if push is needed..."
+    - git push --force gitlab staging || echo "✅ Staging already up to date."
   tags:
     - internal
     - pah
