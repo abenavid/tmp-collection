@@ -66,7 +66,7 @@ sync_to_staging:
     - git fetch --all
     - git checkout -B staging origin/staging || git checkout -B staging
     - echo "Merging current branch ($CI_COMMIT_REF_NAME) into staging..."
-    - git merge --no-edit $CI_COMMIT_REF_NAME || echo "No conflicts detected."
+    - git merge --no-edit origin/$CI_COMMIT_REF_NAME || echo "No conflicts detected."
     - echo "✅ Merge complete. No need to push staging."
   tags:
     - internal
