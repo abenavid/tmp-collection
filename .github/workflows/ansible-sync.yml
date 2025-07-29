@@ -117,20 +117,32 @@ jobs:
           ANSIBLE_GALAXY_TOKEN: ${{ secrets.ANSIBLE_GALAXY_TOKEN }}
         run: |
           for collection_path in namespaces/*/*; do
+            # Skip if not a directory
             if [ ! -d "$collection_path" ]; then
               continue
             fi
-
-            namespace=$(echo "$collection_path" | cut -d'/' -f2)
-            collection_name=$(echo "$collection_path" | cut -d'/' -f3)
-
+          
+            # Skip if no galaxy.yml (not a valid collection)
+            if [ ! -f "$collection_path/galaxy.yml" ]; then
+              echo "⏭️ Skipping $collection_path — no galaxy.yml"
+              continue
+            fi
+          
+            namespace=$(basename "$(dirname "$collection_path")")
+            collection_name=$(basename "$collection_path")
+          
             echo "🚀 Processing collection: $namespace/$collection_name"
-
+          
+            # Build the collection
             ansible-galaxy collection build "$collection_path" \
-              --output-path "$collection_path" --force
-
+              --output-path "$collection_path" --force || {
+                echo "❌ Failed to build collection at $collection_path"
+                exit 1
+            }
+          
+            # Find the generated tar file
             TAR_FILE=$(find "$collection_path" -maxdepth 1 -name '*.tar.gz' | head -n 1)
-
+          
             if [ -f "$TAR_FILE" ]; then
               echo "📦 Publishing $TAR_FILE"
               ansible-galaxy collection publish "$TAR_FILE" \
@@ -141,4 +153,5 @@ jobs:
               exit 1
             fi
           done
-
+          
+          
